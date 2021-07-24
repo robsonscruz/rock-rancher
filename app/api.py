@@ -22,17 +22,7 @@ class CommentsSchema(Schema):
 
 @app.route('/')
 def index():
-    new_comment = {
-            'email': "rcruz",
-            'comment': "xpto",
-            }
-    result = db.commets.insert_one(new_comment)
-
-    key = {'key':'value'}
-    data = {'key2':'value2', 'key3':'value3'}
-    db.commets.update(key, data, upsert=True)
-
-    return jsonify({'api': 'v.1.0.0'})
+    return jsonify({'api': 'v.1.0.0', 'host': os.uname().nodename})
 
 @app.route('/unhealth', methods=['PUT'])
 def unhealth():
