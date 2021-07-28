@@ -34,7 +34,12 @@ terraform apply -target=aws_instance.rancher
 ## 3. Create cluster + load balancer + route53 integrated on RancherServer
 * Update the file "vars.tf" line 85: "default = '<domain.name>'" (inform the domain of your choice)
 ```bash
-terraform apply -target=aws_autoscaling_attachment.asg_attachment -target=aws_autoscaling_policy.autopolicy -target=aws_route53_record.main
+terraform apply -target=aws_autoscaling_attachment.asg_attachment \
+  -target=aws_cloudwatch_metric_alarm.cpualarm \
+  -target=aws_cloudwatch_metric_alarm.cpualarm-down \
+  -target=aws_cloudwatch_metric_alarm.memory-high \
+  -target=aws_cloudwatch_metric_alarm.memory-low \
+  -target=aws_route53_record.main
 ```
 
 ## 4. Add Traefik
@@ -58,8 +63,17 @@ kubectl --namespace=kube-system get pods
 ## 6. Access traefik and check ingress list + backend service
 Access https://traefik.<domain.name>
 
-## @todo - 7. Deploy APP - Rancher
-## @todo - 8. Config CI/CD - Github Action
-## @todo - 9. Enable Monitoring
+## 7. Deploy APP - Rancher
+### Test deploy APP
+* helm install api-comments ./deploy/api-chart -f ./deploy/values-http-prod.yaml --dry-run --debug
+### Deploy APP
+helm install api-comments ./deploy/api-chart -f ./deploy/values-http-prod.yaml
+## Config CI/CD - Github Action
+* OK
+## 9. Enable Monitoring
+* OK
+## Enable ports in security groups ##
+* OK
 
-## @todo - enable ports in security groups ##
+## Erro 502 Bad Request
+* https://github.com/rancher/rancher/issues/25035

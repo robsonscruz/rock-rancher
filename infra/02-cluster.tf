@@ -73,7 +73,7 @@ resource "aws_lb_listener" "ln-https" {
 resource "aws_launch_configuration" "cluster" {
     name_prefix          = "${var.project_name}-"
     image_id             = var.ami
-    instance_type        = var.instance_type_cluster
+    instance_type        = var.instance_type
     security_groups      = [aws_security_group.sg.id]
     key_name             = aws_key_pair.keypair.key_name
     associate_public_ip_address = false
@@ -118,49 +118,98 @@ resource "aws_autoscaling_attachment" "asg_attachment" {
 #-----------------------------------
 # Autoscale policy
 #-----------------------------------
-locals {
-    autoscaling_policy = [
-        {
-            name                    = "terraform-autoplicy"
-            scaling_adjustment      = 1
-            adjustment_type         = "ChangeInCapacity"
-            cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
-            autoscaling_group_name  = aws_autoscaling_group.cluster.name
-        },
-        {
-            name                    = "terraform-autoplicy-down"
-            scaling_adjustment      = -1
-            adjustment_type         = "ChangeInCapacity"
-            cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
-            autoscaling_group_name  = aws_autoscaling_group.cluster.name
-        },
-        {
-            name                    = "terraform-autopolicy-mem"
-            scaling_adjustment      = 1
-            adjustment_type         = "ChangeInCapacity"
-            cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
-            autoscaling_group_name  = aws_autoscaling_group.cluster.name
-        },
-        {
-            name                    = "terraform-autopolicy-mem-down"
-            scaling_adjustment      = -1
-            adjustment_type         = "ChangeInCapacity"
-            cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
-            autoscaling_group_name  = aws_autoscaling_group.cluster.name
-        }
-    ]
-    autoscaling_policy_map  = {for key, val in local.autoscaling_policy: key => val} 
-}
 resource "aws_autoscaling_policy" "autopolicy" {
-    for_each               = local.autoscaling_policy_map
-
-    name                   = each.value.name
-    scaling_adjustment     = each.value.scaling_adjustment
-    adjustment_type        = each.value.adjustment_type
-    cooldown               = each.value.cooldown
-    autoscaling_group_name = each.value.autoscaling_group_name
+    name                    = "${var.project_name}-autoplicy"
+    scaling_adjustment      = 1
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
+    autoscaling_group_name  = aws_autoscaling_group.cluster.name
+}
+resource "aws_autoscaling_policy" "autopolicy-down" {
+    name                    = "${var.project_name}-autoplicy-down"
+    scaling_adjustment      = -1
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
+    autoscaling_group_name  = aws_autoscaling_group.cluster.name
+}
+resource "aws_autoscaling_policy" "autopolicy-mem" {
+    name                    = "${var.project_name}-autopolicy-mem"
+    scaling_adjustment      = 1
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
+    autoscaling_group_name  = aws_autoscaling_group.cluster.name
+}
+resource "aws_autoscaling_policy" "autopolicy-mem-down" {
+    name                    = "${var.project_name}-autopolicy-mem-down"
+    scaling_adjustment      = -1
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = try(var.aws_autoscaling_config.cooldown, 300)
+    autoscaling_group_name  = aws_autoscaling_group.cluster.name
 }
 
+#-----------------------------------
+# Cloudwatch policy
+#-----------------------------------
+resource "aws_cloudwatch_metric_alarm" "cpualarm" {
+    alarm_name          = "${var.project_name}-cpu-high"
+    comparison_operator = try(var.aws_autoscaling_config.comparison_operator_high, "GreaterThanOrEqualToThreshold")
+    evaluation_periods  = try(var.aws_autoscaling_config.evaluation_periods, 2)
+    metric_name         = try(var.aws_autoscaling_config.cpu_metric_name, "CPUUtilization")
+    namespace           = "AWS/EC2"
+    period              = try(var.aws_autoscaling_config.period_high, 120)
+    statistic           = try(var.aws_autoscaling_config.statistic, "Average")
+    threshold           = try(var.aws_autoscaling_config.cpu_threshold_high, 60)
+    dimensions          = {
+        AutoScalingGroupName = aws_autoscaling_group.cluster.name
+    }
+    alarm_description = "This metric monitor EC2 instance cpu utilization"
+    alarm_actions     = [aws_autoscaling_policy.autopolicy.arn]
+}
+resource "aws_cloudwatch_metric_alarm" "cpualarm-down" {
+    alarm_name          = "${var.project_name}-cpu-low"
+    comparison_operator = try(var.aws_autoscaling_config.comparison_operator_low, "LessThanOrEqualToThreshold")
+    evaluation_periods  = try(var.aws_autoscaling_config.evaluation_periods, 2)
+    metric_name         = try(var.aws_autoscaling_config.cpu_metric_name, "CPUUtilization")
+    namespace           = "AWS/EC2"
+    period              = try(var.aws_autoscaling_config.period_high, 120)
+    statistic           = try(var.aws_autoscaling_config.statistic, "Average")
+    threshold           = try(var.aws_autoscaling_config.cpu_threshold_low, 10)
+    dimensions          = {
+        AutoScalingGroupName = aws_autoscaling_group.cluster.name
+    }
+    alarm_description = "This metric monitor EC2 instance cpu utilization"
+    alarm_actions     = [aws_autoscaling_policy.autopolicy-down.arn]
+}
+resource "aws_cloudwatch_metric_alarm" "memory-high" {
+    alarm_name          = "${var.project_name}-mem-high"
+    comparison_operator = try(var.aws_autoscaling_config.comparison_operator_high, "GreaterThanOrEqualToThreshold")
+    evaluation_periods  = try(var.aws_autoscaling_config.evaluation_periods, 2)
+    metric_name         = try(var.aws_autoscaling_config.mem_metric_name, "MemoryUtilization")
+    namespace           = "AWS/EC2"
+    period              = try(var.aws_autoscaling_config.period_high, 120)
+    statistic           = try(var.aws_autoscaling_config.statistic, "Average")
+    threshold           = try(var.aws_autoscaling_config.mem_threshold_high, 80)
+    dimensions          = {
+        AutoScalingGroupName = aws_autoscaling_group.cluster.name
+    }
+    alarm_description   = "This metric monitors ec2 memory for high utilization on agent hosts"
+    alarm_actions       = [aws_autoscaling_policy.autopolicy-mem.arn]
+}
+resource "aws_cloudwatch_metric_alarm" "memory-low" {
+    alarm_name          = "${var.project_name}-mem-low"
+    comparison_operator = try(var.aws_autoscaling_config.comparison_operator_low, "LessThanOrEqualToThreshold")
+    evaluation_periods  = try(var.aws_autoscaling_config.evaluation_periods, 2)
+    metric_name         = try(var.aws_autoscaling_config.mem_metric_name, "MemoryUtilization")
+    namespace           = "AWS/EC2"
+    period              = try(var.aws_autoscaling_config.period_low, 300)
+    statistic           = try(var.aws_autoscaling_config.statistic, "Average")
+    threshold           = try(var.aws_autoscaling_config.mem_threshold_low, 40)
+    dimensions          = {
+        AutoScalingGroupName = aws_autoscaling_group.cluster.name
+    }
+    alarm_description   = "This metric monitors ec2 memory for low utilization on agent hosts"
+    alarm_actions       = [aws_autoscaling_policy.autopolicy-mem-down.arn]
+}
 #-----------------------------------
 # Certificate
 #-----------------------------------
@@ -179,7 +228,7 @@ data "aws_route53_zone" "main" {
 resource "aws_route53_record" "main" {
   zone_id = data.aws_route53_zone.main.zone_id
   name    = "*.${var.domain_name}"
-  type    = "CNAME"
+  type    = "A"
 
   alias {
     name    = aws_lb.lbapp.dns_name

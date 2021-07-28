@@ -35,9 +35,6 @@ variable "user_data_k8s" {
 #-----------------------------------
 # LB - Cluster
 #-----------------------------------
-variable "instance_type_cluster" {
-    default = "t4g.large"
-}
 variable "elb_subnets" {
     default = ["subnet-95f85abf", "subnet-511faa09"]
 }
@@ -68,11 +65,24 @@ variable "tags_k8s" {
 #-----------------------------------
 variable "aws_autoscaling_config" {
     default = {
-        min_size = 1
+        min_size = 2
         max_size = 3
         suspended_processes = []#["Terminate"]
         # Policy
         cooldown = 300 // seconds
+        # Cloudwatch
+        comparison_operator_low     = "LessThanOrEqualToThreshold"
+        comparison_operator_high    = "GreaterThanOrEqualToThreshold"
+        evaluation_periods  = 2
+        cpu_metric_name     = "CPUUtilization"
+        mem_metric_name     = "MemoryUtilization"
+        statistic           = "Average"
+        period_high         = 120
+        period_low          = 300
+        cpu_threshold_high  = 60
+        cpu_threshold_low   = 10
+        mem_threshold_high  = 80
+        mem_threshold_low   = 40
     }
 }
 #-----------------------------------

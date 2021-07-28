@@ -17,3 +17,6 @@ EC2 com determinadas características.
 Como faremos um exemplo com base num single cluster, usaremos apenas AWS, porém todas as técnicas podem ser usadas tabmém para
 replicar todos os dados em outro provider, e se por ventura algo acontecer, podemos facilmente redirecionar o tráfego apenas ajustando
 o DNS...
+
+## O K8S PaaS - Azure|AWS|GCP
+Fica mais simples a gestão pois quem cuida do parque de máquinas é a provedora do serviço.
