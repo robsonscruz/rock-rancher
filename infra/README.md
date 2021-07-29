@@ -71,9 +71,14 @@ helm install api-comments ./deploy/api-chart -f ./deploy/values-http-prod.yaml
 ## Config CI/CD - Github Action
 * OK
 ## 9. Enable Monitoring
-* OK
+* Open cluster explorer in Rancher Server
+* On right menu click in "rock-aws" if not selected
+* On left menu click in "Cluster Explorer" and after in "Apps & Marketplace"
+* Search app called "Monitoring" and select
+* Change to version 9.4.203
+* Click on button "install" (await a few moments to display a "Disconnected" message in red)
+* Back on "Cluster Explorer" and select the namespace "Monitoring" (Graphana, Prometheus, NodeExplorer)
+## 10. Import dashboards
+10000 e 8588
 ## Enable ports in security groups ##
 * OK
-
-## Erro 502 Bad Request
-* https://github.com/rancher/rancher/issues/25035

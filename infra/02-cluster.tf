@@ -72,8 +72,8 @@ resource "aws_lb_listener" "ln-https" {
 #-----------------------------------
 resource "aws_launch_configuration" "cluster" {
     name_prefix          = "${var.project_name}-"
-    image_id             = var.ami
-    instance_type        = var.instance_type
+    image_id             = var.ami_k8s
+    instance_type        = var.instance_type_k8s
     security_groups      = [aws_security_group.sg.id]
     key_name             = aws_key_pair.keypair.key_name
     associate_public_ip_address = false

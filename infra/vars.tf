@@ -19,12 +19,19 @@ variable "key_path" {
 variable "instance_type" {
     default = "t3a.medium"
 }
+variable "instance_type_k8s" {
+    default = "t3.large"
+}
 variable "subnet_id" {
     default = "subnet-95f85abf"
 }
 variable "ami" {
-    # Ubuntu Server
+    # Ubuntu Server 20.04
     default = "ami-042e8287309f5df03"
+}
+variable "ami_k8s" {
+    # Ubuntu Server 18.04
+    default = "ami-0747bdcabd34c712a"
 }
 variable "user_data_rancher" {
     default = "./user-data/rancher.sh"
