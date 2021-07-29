@@ -56,7 +56,7 @@ curl -sv localhost:8000/api/comment/list/2
 
 * Pipeline de deploy automatizado
 
-* Monitoramento dos serviços e métricas da aplicação
+* Monitoramento dos serviços e métricas da aplicação (@todo - adicionar alarmes em canais de comunicação como slack/discord)
 
 
 # Dicas
