@@ -161,6 +161,12 @@ resource "google_compute_address" "static" {
   region  = var.region
 }
 #-----------------------------------
+# Global IP
+#-----------------------------------
+resource "google_compute_global_address" "default" {
+  name = "${var.project_name}-ip-global"
+}
+#-----------------------------------
 # VPC
 #-----------------------------------
 data "google_compute_network" "network" {
@@ -211,6 +217,7 @@ resource "google_compute_global_forwarding_rule" "https" {
   project    = var.project
   name       = "${var.project_name}-https"
   target     = google_compute_target_https_proxy.main.id
+  ip_address = google_compute_global_address.default.address
   port_range = "443"
 }
 #-----------------------------------
@@ -244,4 +251,28 @@ resource "google_compute_url_map" "main" {
       service = google_compute_backend_service.main.id
     }
   }
+}
+#-----------------------------------
+# HTTP TO HTTPS
+#-----------------------------------
+resource "google_compute_url_map" "http-redirect" {
+  name = "${var.project_name}-http-redirect-https"
+
+  default_url_redirect {
+    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"  // 301 redirect
+    strip_query            = false
+    https_redirect         = true  // this is the magic
+  }
+}
+
+resource "google_compute_target_http_proxy" "http-redirect" {
+  name    = "http-redirect"
+  url_map = google_compute_url_map.http-redirect.self_link
+}
+
+resource "google_compute_global_forwarding_rule" "http-redirect" {
+  name       = "${var.project_name}-http-redirect"
+  target     = google_compute_target_http_proxy.http-redirect.self_link
+  ip_address = google_compute_global_address.default.address
+  port_range = "80"
 }
