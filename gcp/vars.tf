@@ -135,37 +135,3 @@ variable "project_name" {
 variable "domain_name" {
     default = "rock-devops.ml"
 }
-
-
-
-
-####################################################
-# NAT
-
-# Instance Template
-/*variable "name"         { default = "multicloud-k8s" }
-variable "prefix"       { default = "app-" }
-variable "desc"         { default = "This template is used to create Squid server instances." }
-variable "tags"         { default = "app-backend" }
-variable "desc_inst"    { default = "K8s Rancher server instance" }
-# Managed Instace Group
-variable "rmig_name"          { default =  "multicloud-backend" }
-variable "base_instance_name" { default =  "appks8" }
-variable "target_size"        { default =  "1" }
-#
-# RMIG Autoscaler
-variable "rmig_as_name" { default = "multicluster-as" }
-#
-# Forwarding Rule - Load Balancer
-variable "ports"         { default = ["80", "443", "6443"] }
-#
-# Firewall Rules
-variable "health_port" { default = 80 }
-
-# DNS
-variable "zone_name" {
-    default = "rock-devops"
-}
-variable "domain_name" {
-    default = "rock-devops.ml"
-}*/
