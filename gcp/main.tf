@@ -37,21 +37,9 @@ resource "google_compute_health_check" "main" {
     unhealthy_threshold = try(var.health_check_config.unhealthy_threshold, 2)
     timeout_sec         = try(var.health_check_config.timeout_sec, 1)
 
-    dynamic "http_health_check" {
-        for_each = try(var.health_check_config.http_health_check_host, "") != "" ? [{host: var.health_check_config.http_health_check_host, port: try(var.health_check_config.http_health_check_port, "80")}] : []
-
-        content {
-            host = http_health_check.value.host
-            port = http_health_check.value.port
-        }
-    }
-
-    dynamic "http_health_check" {
-        for_each = try(var.health_check_config.http_health_check_host, "") == "" ? [{port: try(var.health_check_config.http_health_check_port, "80")}] : []
-
-        content {
-            port = http_health_check.value.port
-        }
+    http_health_check {
+      port              = try(var.health_check_config.http_health_check_port, "80")
+      request_path      = try(var.health_check_config.request_path, "/")
     }
 }
 #-----------------------------------

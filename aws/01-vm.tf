@@ -10,14 +10,17 @@ resource "aws_key_pair" "keypair" {
 # Security Group
 #-----------------------------------
 resource "aws_security_group" "sg" {
-  name        = "rancher-server"
-  description = "Access Rancher Server"
+  name        = "${var.project_name}-sg-server"
+  description = "Access Server - ${var.project_name}"
 
-  ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks =  ["0.0.0.0/0"]
+  dynamic "ingress" {
+      for_each = var.sg_ingress
+
+      content {
+        from_port       = ingress.value
+        to_port         = ingress.value
+        protocol        = "tcp"
+      }
   }
  
   egress {

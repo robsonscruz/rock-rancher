@@ -17,20 +17,20 @@ resource "aws_lb" "lbapp" {
 #-----------------------------------
 resource "aws_lb_target_group" "api" {
   name      = var.project_name
-  port      = "80"
-  protocol  = "HTTP"
+  port      = try(var.target_group_config.port, "80")
+  protocol  = try(var.target_group_config.protocol, "HTTP")
   vpc_id    = var.vpc_id
   tags      = var.tags_k8s
 
   health_check { 
-    path = "/api/providers"
-    port = "8080"
+    path = try(var.target_group_config.health_check_path, "/")
+    port = try(var.target_group_config.http_health_check_port, "80")
   }
 
   stickiness {
-    type            = "lb_cookie"
-    cookie_duration = "600"
-    enabled         = true
+    type            = try(var.target_group_config.stickiness_type, "lb_cookie")
+    cookie_duration = try(var.target_group_config.stickiness_cookie_duration, "600")
+    enabled         = try(var.target_group_config.stickiness_enabled, true)
   }
 }
 

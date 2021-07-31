@@ -52,7 +52,7 @@ variable "vpc_id" {
 # Security group
 #-----------------------------------
 variable "sg_ingress" {
-    default = [22, 80, 8080, 443]
+    default = [22, 80, 8080, 443, 6443] // 6443 usada pelo rancher
 }
 #-----------------------------------
 # TAGs
@@ -66,6 +66,20 @@ variable "tags_k8s" {
    default = {
         Name = "k8s"
    }
+}
+#-----------------------------------
+# Health check
+#-----------------------------------
+variable "target_group_config" {
+    default = {
+        port                        = 80
+        protocol                    = "HTTP"
+        http_health_check_port      = 8080
+        health_check_path           = "/api/providers"
+        stickiness_type             = "lb_cookie"
+        stickiness_cookie_duration  = "600"
+        stickiness_enabled          = true
+    }
 }
 #-----------------------------------
 # Auto scale

@@ -65,13 +65,13 @@ variable "instance_group_manager_port" {
 variable "health_check_config" {
     default = {
         check_interval_sec                 = 300
-        unhealthy_threshold                = 10
         timeout_sec                        = 1
-        http_health_check_host             = "traefik.rock-devops.ml"
-        http_health_check_port             = "80"
+        http_health_check_port             = "8080"
+        request_path                       = "/api/providers"
         # Em ambiente de produção esse valor deve ser o tempo que
         # o serviço demora para subir
         healing_policies_initial_delay_sec = 600
+        unhealthy_threshold                = 10
     }
 }
 #-----------------------------------

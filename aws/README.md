@@ -110,6 +110,6 @@ helm install api-comments ./deploy/api-chart -f ./deploy/values-http-prod.yaml
 * Click on button "install" (await a few moments to display a "Disconnected" message in red)
 * Back on "Cluster Explorer" and select the namespace "Monitoring" (Graphana, Prometheus, NodeExplorer)
 ## 10. Import dashboards
+* default username: admin
+* default password: prom-operator
 10000 e 8588
-## Enable ports in security groups ##
-* @todo
